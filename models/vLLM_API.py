@@ -39,10 +39,11 @@ def load_vLLM_model(model_ckpt, seed, tensor_parallel_size=1, half_precision=Tru
             model=model_ckpt,
             dtype="half",
             tensor_parallel_size=tensor_parallel_size,
-            seed=seed,
+            seed=seed,            
             trust_remote_code=True,
             max_num_seqs=max_num_seqs,
             swap_space=8,
+            max_model_len=60000
         )
     else:
         llm = LLM(
@@ -52,6 +53,8 @@ def load_vLLM_model(model_ckpt, seed, tensor_parallel_size=1, half_precision=Tru
             trust_remote_code=True,
             max_num_seqs=max_num_seqs,
             swap_space=8,
+            max_model_len=60000,
+
         )
 
     return tokenizer, llm

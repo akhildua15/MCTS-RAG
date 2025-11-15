@@ -10,10 +10,11 @@ from openai import AzureOpenAI, OpenAI
 
 thread_lock = threading.Lock()
 
-openai_api_key = "your_openai_api_key"
+openai_api_key = "you_api_key"
 
 client = OpenAI(
     api_key=openai_api_key,
+    base_url="https://ai-gateway.andrew.cmu.edu"
 )
 
 
@@ -27,7 +28,7 @@ def load_OpenAI_model(model):
 def generate_with_OpenAI_model(
     prompt,
     n=1,
-    model_ckpt="gpt-4o",
+    model_ckpt="gpt-4o-2024-08-06",
     max_tokens=512,
     temperature=0.8,
     top_k=40,
@@ -71,7 +72,7 @@ def generate_with_OpenAI_model(
 def generate_n_with_OpenAI_model(
     prompt,
     n=1,
-    model_ckpt="gpt-4o",
+    model_ckpt="gpt-4o-2024-08-06",
     max_tokens=512,
     temperature=0.8,
     top_k=40,
@@ -86,7 +87,7 @@ def generate_n_with_OpenAI_model(
 def generate_prompts_with_OpenAI_model(
     prompts: list,
     n=1,
-    model_ckpt="gpt-4o",
+    model_ckpt="gpt-4o-2024-08-06",
     max_tokens=512,
     temperature=0.8,
     top_k=40,

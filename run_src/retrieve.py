@@ -58,8 +58,8 @@ class Retriever:
             credential=AzureKeyCredential(AZURE_SEARCH_API_KEY),
         )
 
-        faiss_index_path = "faiss_index_path"
-        evidence_csv_path = "evidence_csv_path"
+        faiss_index_path = "data/FMT/faiss.index"
+        evidence_csv_path = "data/FMT/evidence.csv"
 
         self.evidence = None
 
@@ -139,7 +139,7 @@ class Retriever:
         rag_prompt = RETRIEVE_PROMPT.format(question=original_question)
         print(f"Processing question: {original_question}")
 
-        io_output_list = generate_with_OpenAI_model(prompt=rag_prompt, model_ckpt="gpt-4o", max_tokens=128, stop=[])
+        io_output_list = generate_with_OpenAI_model(prompt=rag_prompt, model_ckpt="gpt-4o-2024-08-06", max_tokens=128, stop=[])
 
         print("Generated query: " + ", ".join(io_output_list))
         query = self._extract_query(io_output_list[0])
@@ -160,7 +160,7 @@ class Retriever:
         rag_prompt = RETRIEVE_PROMPT.format(question=original_question)
         print(f"Processing question: {original_question}")
 
-        io_output_list = generate_with_OpenAI_model(prompt=rag_prompt, model_ckpt="gpt-4o", max_tokens=128, stop=[])
+        io_output_list = generate_with_OpenAI_model(prompt=rag_prompt, model_ckpt="gpt-4o-2024-08-06", max_tokens=128, stop=[])
 
         query = self._extract_query(io_output_list[0])
 

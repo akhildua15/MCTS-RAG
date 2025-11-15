@@ -49,6 +49,7 @@ def main(args):
     for i, data_item in enumerate(
         (pbar := tqdm(data_item_list, disable=args.local_rank > 0 or args.verbose, position=1))
     ):
+        print("HI ", i)
         if i < args.start_idx or i >= args.end_idx:
             continue
 

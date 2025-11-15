@@ -433,7 +433,7 @@ class Generator:
         )
         try:
             most_likely_answer, likelihood = self._get_most_likely_answer(cleaned_io_output_list)
-            most_likely_answer = [f"{answer.strip().strip('\n')}\n\n### Relevant Context: {retrieved_context}\n" for answer in most_likely_answer]
+            most_likely_answer = [f"{answer.strip()}\n\n### Relevant Context: {retrieved_context}\n" for answer in most_likely_answer]
         except Exception as e:
             raise GeneratorError(
                 source="generate re-subanswers: few shot cot",
@@ -603,9 +603,9 @@ class Generator:
         io_output_list = self.io.generate(
             model_input=io_input, max_tokens=256, num_return=self.num_a1_steps, stop_tokens=['\n\n\n', f'Step {next_ost_step_id+1}',str(next_ost_step_id+1)]
         )
-        ost_step_list = list(set([f"{io_output.strip().strip('\n')}\n\n### Relevant Context: {retrieved_context}\n" for io_output in io_output_list if io_output.startswith(f"Step {next_ost_step_id}")]))
+        ost_step_list = list(set([f"{io_output.strip()}\n\n### Relevant Context: {retrieved_context}\n" for io_output in io_output_list if io_output.startswith(f"Step {next_ost_step_id}")]))
         if len(ost_step_list) < 1:
-            ost_step_list = list(set([f"Step {next_ost_step_id}: {io_output.strip().strip('\n')}" for io_output in io_output_list]))
+            ost_step_list = list(set([f"Step {next_ost_step_id}: {io_output.strip()}" for io_output in io_output_list]))
         print(f"rag step list {ost_step_list}")
 
         #! generate potential answer to the user question
@@ -675,9 +675,9 @@ class Generator:
             model_input=io_input, max_tokens=256, num_return=self.num_a1_steps, stop_tokens=[f"Step {next_ost_step_id+1}", "\n\n\n"]
         )
 
-        ost_step_list = list(set([io_output.strip().strip('\n') for io_output in io_output_list if io_output.startswith(f"Step {next_ost_step_id}")]))
+        ost_step_list = list(set([io_output.strip() for io_output in io_output_list if io_output.startswith(f"Step {next_ost_step_id}")]))
         if len(ost_step_list)<1:
-            ost_step_list = list(set([f"Step {next_ost_step_id}: {io_output.strip().strip('\n')}" for io_output in io_output_list]))
+            ost_step_list = list(set([f"Step {next_ost_step_id}: {io_output.strip()}" for io_output in io_output_list]))
 
         assert(len(ost_step_list)>0)
 

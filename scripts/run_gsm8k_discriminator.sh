@@ -1,5 +1,5 @@
 CUDA_VISIBLE_DEVICES=1 python run_src/do_discriminate.py \
-    --root_dir /home/asperger/rStar/run_outputs/FMT/Meta-Llama-3.1-8B-Instruct-Turbo/2025-02-11_15-00-04---[default] \
+    --root_dir /data/user_data/akhild/Dev/MCTS-RAG/run_outputs/FMT/Llama-3.1-8B-Instruct/2025-11-15_18-13-17---[default] \
     --dataset_name FMT \
     --rc_mode mid \
     --note default
