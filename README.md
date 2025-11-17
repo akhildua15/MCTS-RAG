@@ -76,11 +76,6 @@ The script `run_gsm8k_discriminator.sh` includes several configurable parameters
 
 Experiments show that our approach outperforms baselines on CWQA, GPQA, and FMT, achieving 20%+ gains on CWQA, 15%+ on GPQA, and 10%+ on FMT with LLaMA 3.1-8B. By refining retrieval and verification, it enhances factual accuracy, minimizes hallucinations, and sets a new benchmark for complex reasoning tasks.
 
-<p align="center">
-  <img src="assets/result_mcts_rag.png" width="600px">
-</p>
-
-
 ## Citation
 
 If you find our work helpful, please consider citing it:
