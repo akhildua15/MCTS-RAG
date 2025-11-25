@@ -70,6 +70,7 @@ class MCTS_Searcher:
         discount: float,
         verbose: bool = False,
     ):
+        self.Q: Dict[MCTS_Node, float] = defaultdict(lambda: 0.0)
         self.Q_sq: Dict[MCTS_Node, float] = defaultdict(lambda: 0.0) # sum of squared rewards for variance
         self.N: Dict[MCTS_Node, int] = defaultdict(lambda: 0)  # total visit count for each node
         self.parent2children: Dict[MCTS_Node, List[MCTS_Node]] = dict()  # children of each node
