@@ -25,20 +25,29 @@ class RobustEvaluator:
             "Output ONLY the numeric score."
         )
         
-        try:
-            # We use a small number of tokens as we only expect a number
-            response_list = self.io.generate(
-                model_input=prompt,
-                max_tokens=10,
-                num_return=1,
-                stop_tokens=["\n"]
-            )
-            response = response_list[0].strip()
-            score = float(response)
-            return max(0.0, min(1.0, score)) # Clip to [0, 1]
-        except Exception as e:
-            print(f"Error in verify_support: {e}")
-            return 0.0 # Default to no support on error
+        for _ in range(2): # Retry once
+            try:
+                # We use a small number of tokens as we only expect a number
+                response_list = self.io.generate(
+                    model_input=prompt,
+                    max_tokens=10,
+                    num_return=1,
+                    stop_tokens=["\n"]
+                )
+                if not response_list or not response_list[0]:
+                    continue
+                    
+                response = response_list[0].strip()
+                if not response:
+                    continue
+                    
+                score = float(response)
+                return max(0.0, min(1.0, score)) # Clip to [0, 1]
+            except Exception as e:
+                # print(f"Error in verify_support: {e}") # Reduce noise
+                continue
+        
+        return 0.0 # Default to no support on error or empty response
 
     def robust_score(self, question: str, answer: str, retrieved_docs: List[str]) -> float:
         """

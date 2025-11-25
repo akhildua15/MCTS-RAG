@@ -1259,7 +1259,7 @@ class Reasoning_MCTS_Node(MCTS_Node):
                 user_question=self.user_question, paraphrased=self.paraphrased, hint=hint
             )
             for direct_answer, value in zip(direct_answer_list, value_list):
-                if np.isnan(value) or value <= 0:
+                if np.isnan(value):
                     breakpoint()
                 self.children.append(
                     Reasoning_MCTS_Node(
