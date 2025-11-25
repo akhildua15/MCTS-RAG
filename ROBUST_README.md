@@ -42,6 +42,8 @@ You can fine-tune the robustness mechanisms with the following arguments:
 
 ### Example with Custom Settings
 
+### Example with Custom Settings
+
 ```bash
 python run_src/MCTS_for_reasoning_with_rag.py \
     --dataset_name gsm8k \
@@ -51,6 +53,28 @@ python run_src/MCTS_for_reasoning_with_rag.py \
     --robust_sample_size 5 \
     --robust_aggregation trimmed_mean \
     --uct_variance_weight 0.2
+```
+
+### Full Run Command with `do_generate.py`
+
+For a complete execution using the `do_generate.py` script (similar to the original repository's workflow), use the following command:
+
+```bash
+python run_src/do_generate.py \
+    --dataset_name gsm8k \
+    --test_json_filename test_mini \
+    --api vllm \
+    --model_ckpt meta-llama/Llama-3.1-8B-Instruct \
+    --note robust_run \
+    --half_precision \
+    --num_rollouts 5 \
+    --tensor_parallel_size 1 \
+    --temperature 0.1 \
+    --enable_robustness \
+    --robust_sample_size 3 \
+    --robust_aggregation median \
+    --uct_variance_weight 0.1 \
+    --verbose
 ```
 
 ## Implementation Details

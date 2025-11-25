@@ -147,6 +147,12 @@ if __name__ == "__main__":
     #! -------------------------- Used for selecting answer --------------------------
     parser.add_argument("--enable_potential_score", action="store_true")
 
+    #! -------------------------- Robustness --------------------------
+    parser.add_argument("--enable_robustness", action="store_true", help="Enable Ro-MCTS robustness features")
+    parser.add_argument("--robust_sample_size", type=int, default=3, help="Number of retrieved docs to evaluate against")
+    parser.add_argument("--robust_aggregation", type=str, default="median", choices=["median", "mean", "trimmed_mean"], help="Aggregation method for robust score")
+    parser.add_argument("--uct_variance_weight", type=float, default=0.1, help="Weight for variance penalty in UCT")
+
     #! -------------------------------------------------------------------------------
 
     args = parser.parse_args()
