@@ -70,7 +70,7 @@ class MCTS_Searcher:
         discount: float,
         verbose: bool = False,
     ):
-        self.Q: Dict[MCTS_Node, float] = defaultdict(lambda: 0.0)  # total reward of each node
+        self.Q_sq: Dict[MCTS_Node, float] = defaultdict(lambda: 0.0) # sum of squared rewards for variance
         self.N: Dict[MCTS_Node, int] = defaultdict(lambda: 0)  # total visit count for each node
         self.parent2children: Dict[MCTS_Node, List[MCTS_Node]] = dict()  # children of each node
 
@@ -81,6 +81,10 @@ class MCTS_Searcher:
         self.weight_scheduler = weight_scheduler
         self.num_rollouts = num_rollouts
         self.discount = discount
+        
+        # New args for variance-aware UCT
+        self.enable_variance_uct = True # Can be toggled via args later if needed
+        self.uct_variance_weight = 0.1 # Lambda parameter for variance penalty
 
         self.verbose = verbose
 
@@ -155,6 +159,7 @@ class MCTS_Searcher:
         reward = leaf.calculate_reward()
         for node in reversed(path):
             self.Q[node] += reward
+            self.Q_sq[node] += reward ** 2 # Track sum of squares
             self.N[node] += 1
             self.explored_nodes.add(node)
 
@@ -178,7 +183,7 @@ class MCTS_Searcher:
         )
 
     def _compute_uct(self, parent_node: MCTS_Node, node: MCTS_Node, rollout_id: int):
-        "Upper confidence bound for trees"
+        "Upper confidence bound for trees with Variance Awareness"
         if parent_node is None:  # invalid UCT: the node is the root
             return 666
         else:
@@ -186,4 +191,25 @@ class MCTS_Searcher:
                 return 999
             else:
                 weight = self._get_weight(rollout_id)
-                return self.Q[node] / self.N[node] + weight * math.sqrt(math.log(self.N[parent_node]) / self.N[node])
+                
+                # Standard UCT terms
+                exploitation = self.Q[node] / self.N[node]
+                exploration = weight * math.sqrt(math.log(self.N[parent_node]) / self.N[node])
+                
+                uct_value = exploitation + exploration
+                
+                # Variance penalty
+                if self.enable_variance_uct:
+                    # Var(X) = E[X^2] - (E[X])^2
+                    avg_sq_reward = self.Q_sq[node] / self.N[node]
+                    avg_reward = self.Q[node] / self.N[node]
+                    variance = avg_sq_reward - (avg_reward ** 2)
+                    # Clamp variance to be non-negative (floating point errors)
+                    variance = max(0.0, variance)
+                    
+                    # Penalty term: lambda * sigma
+                    # We use std dev (sigma) as it's in the same units as reward
+                    std_dev = math.sqrt(variance)
+                    uct_value -= self.uct_variance_weight * std_dev
+
+                return uct_value

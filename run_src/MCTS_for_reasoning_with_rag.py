@@ -21,6 +21,7 @@ from models.IO_System import IO_System
 from common.utils import read_txt, read_json
 from eval_src.Evaluator import Evaluator, GSM8KEvaluator
 from MCTS_backbone import MCTS_Searcher, MCTS_Node
+from run_src.robust_eval import RobustEvaluator
 from run_src.mcts_utils import (
     Node_Type,
     GeneratorError,
@@ -53,6 +54,10 @@ class Generator:
         if not args.disable_rag:
             self.retriever = Retriever()
             self.retriever.regist_io_system(self.io)
+        
+        self.enable_robustness = getattr(args, 'enable_robustness', False)
+        if self.enable_robustness:
+            self.robust_evaluator = RobustEvaluator(self.io, args)
 
         self.num_subquestions = args.num_subquestions
         self.num_a1_steps = args.num_a1_steps
@@ -182,7 +187,27 @@ class Generator:
             )
 
         direct_answer_list.append(most_likely_answer)
-        value_list.append(likelihood)
+        
+        if self.enable_robustness:
+             # Retrieve docs for robust evaluation if not already available
+             # For direct answer, we might need to retrieve based on the question if no context is present
+             # However, usually RAG has happened before. 
+             # If this is a direct answer node, we check if we have context.
+             # For simplicity in this design, we re-retrieve or use the last context.
+             # Let's retrieve specifically for verification.
+             retrieved_docs = self.retriever.retrieve(user_question) if hasattr(self, 'retriever') else []
+             # Split into chunks if necessary, but retrieve returns a string usually. 
+             # We assume retrieve returns a string of concatenated docs or a list. 
+             # If string, we might need to split. Let's assume list for now or handle string.
+             # Looking at retrieve.py (not shown but inferred), it likely returns a string.
+             # Let's treat the whole context as one "doc" or split by newlines/markers if possible.
+             # For now, pass as a single item list if string.
+             docs_list = [retrieved_docs] if isinstance(retrieved_docs, str) else retrieved_docs
+             
+             robust_score = self.robust_evaluator.robust_score(user_question, most_likely_answer, docs_list)
+             value_list.append(robust_score)
+        else:
+            value_list.append(likelihood)
 
         return direct_answer_list, value_list
 
@@ -1527,6 +1552,12 @@ def search_for_answers(args, user_question: str, question_id: int, gt_answer: st
         discount=args.mcts_discount_factor,
         verbose=args.verbose,
     )
+    
+    if hasattr(args, 'enable_robustness') and args.enable_robustness:
+        mcts_searcher.enable_variance_uct = True
+        mcts_searcher.uct_variance_weight = getattr(args, 'uct_variance_weight', 0.1)
+    else:
+        mcts_searcher.enable_variance_uct = False
 
     #! build the MCTS tree
     root_node = Reasoning_MCTS_Node(
@@ -1552,7 +1583,7 @@ def search_for_answers(args, user_question: str, question_id: int, gt_answer: st
         model_rollout_nodes.append(rollout_node)
 
         _, best_solution, _, chosen_node, all_solution_nodes, all_solutions = stochastic_find_best_solution(
-            root_node, generator.evaluator, enable_potential_score=args.enable_potential_score
+            root_node, generator.evaluator, enable_potential_score=args.enable_potential_score, enable_robustness=getattr(args, 'enable_robustness', False)
         )
         model_solutions.append(best_solution)
         model_all_solutions.append(all_solutions)
