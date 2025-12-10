@@ -86,6 +86,7 @@ Ro-MCTS significantly outperforms the baseline in environments with retrieval no
 | Llama 3.1 8B | FMT | 73.8 | **76.0** |
 | Llama 3.1 8B | GPQA | 71.3 | **74.0** |
 | Qwen2.5 7B | FMT | 68.2 | **69.6** |
+| Qwen2.5 7B | GPQA | 64.6 | **65.7** |
 
 ## Implementation Details
 
@@ -95,7 +96,7 @@ Ro-MCTS significantly outperforms the baseline in environments with retrieval no
 
 ## Citation
 
-If you use Ro-MCTS or MCTS-RAG, please cite:
+If you use MCTS-RAG, please cite:
 
 ```bibtex
 @misc{hu2025mctsragenhancingretrievalaugmentedgeneration,
