@@ -644,7 +644,7 @@ def find_valid_solution_nodes(root_node):
     return valid_solution_nodes
 
 
-def find_best_solution(root_node, evaluator, enable_potential_score=False):
+def find_best_solution(root_node, evaluator, enable_potential_score=False, enable_robustness=False):
     # todo: what strategy do we use to select best node?
     """The function finds the best solution from the solution nodes in the MCTS tree.
     Return: top answer, top solution, confidence of the top answer, the corresponding node of the answer, all solution nodes
@@ -652,7 +652,7 @@ def find_best_solution(root_node, evaluator, enable_potential_score=False):
     solution_nodes = find_valid_solution_nodes(root_node)
 
     if len(solution_nodes) == 0:
-        return None, None
+        return None, None, None, None, None
 
     def extract_solution_from_node(node):
         if node.node_type is Node_Type.SUBQUESTION:
@@ -685,6 +685,49 @@ def find_best_solution(root_node, evaluator, enable_potential_score=False):
         if enable_potential_score
         else None
     )
+    
+    if enable_robustness:
+        # Robust Selection: Group by answer and use robust statistics on rewards (node values)
+        import statistics
+        answer_groups = defaultdict(list)
+        
+        for i, node in enumerate(solution_nodes):
+            ans_str = evaluator.extract_answer_from_model_completion(extract_solution_from_node(node))
+            if ans_str:
+                answer_groups[ans_str].append({
+                    'node': node,
+                    'solution': solutions[i],
+                    'value': node.node_value
+                })
+        
+        best_ans = None
+        best_score = -1.0
+        best_node = None
+        best_solution_text = None
+        
+        for ans, items in answer_groups.items():
+            values = [item['value'] for item in items]
+            if not values: continue
+            
+            # Use Median for robustness
+            robust_score = statistics.median(values)
+            
+            if robust_score > best_score:
+                best_score = robust_score
+                best_ans = ans
+                # For the representative node/solution, pick the one with value closest to median
+                # or just the first one. Let's pick the one with max value within the group as representative?
+                # Or simply the first one.
+                best_item = max(items, key=lambda x: x['value'])
+                best_node = best_item['node']
+                best_solution_text = best_item['solution']
+        
+        if best_ans:
+             return best_ans, best_solution_text, best_score, best_node, solution_nodes
+        else:
+             # Fallback if no valid answers found
+             return None, None, None, None, solution_nodes
+
     top_answer, top_completion, top_completion_id, top_confidence = evaluator.find_most_confident_answer(
         solutions, prior_weights
     )
@@ -695,6 +738,7 @@ def stochastic_find_best_solution(
     root_node,
     evaluator,
     enable_potential_score,
+    enable_robustness=False,
 ):
     # todo: what strategy do we use to select best node?
     """The function finds the best solution from the solution nodes in the MCTS tree.
@@ -703,7 +747,7 @@ def stochastic_find_best_solution(
     solution_nodes = find_valid_solution_nodes(root_node)
 
     if len(solution_nodes) == 0:
-        return None, None
+        return None, None, None, None, None, None
 
     def extract_solution_from_node(node):
         if node.node_type is Node_Type.SUBQUESTION:
@@ -736,6 +780,45 @@ def stochastic_find_best_solution(
         if enable_potential_score
         else None
     )
+    
+    if enable_robustness:
+        # Robust Selection: Group by answer and use robust statistics on rewards (node values)
+        import statistics
+        answer_groups = defaultdict(list)
+        
+        for i, node in enumerate(solution_nodes):
+            ans_str = evaluator.extract_answer_from_model_completion(extract_solution_from_node(node))
+            if ans_str:
+                answer_groups[ans_str].append({
+                    'node': node,
+                    'solution': solutions[i],
+                    'value': node.node_value
+                })
+        
+        best_ans = None
+        best_score = -1.0
+        best_node = None
+        best_solution_text = None
+        
+        for ans, items in answer_groups.items():
+            values = [item['value'] for item in items]
+            if not values: continue
+            
+            # Use Median for robustness
+            robust_score = statistics.median(values)
+            
+            if robust_score > best_score:
+                best_score = robust_score
+                best_ans = ans
+                best_item = max(items, key=lambda x: x['value'])
+                best_node = best_item['node']
+                best_solution_text = best_item['solution']
+        
+        if best_ans:
+             return best_ans, best_solution_text, best_score, best_node, solution_nodes, solutions
+        else:
+             return None, None, None, None, solution_nodes, solutions
+
     top_answer, top_completion, top_completion_id, top_confidence = evaluator.stochastic_find_most_confident_answer(
         completions=solutions, prior_weights=prior_weights
     )
