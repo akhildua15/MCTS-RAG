@@ -37,7 +37,7 @@ You can fine-tune the robustness mechanisms with the following arguments:
 | :--- | :--- | :--- |
 | `--enable_robustness` | `False` | Master flag to enable all Ro-MCTS features. |
 | `--robust_sample_size` | `3` | Number of retrieved documents to evaluate against (lower = faster, higher = more robust). |
-| `--robust_aggregation` | `median` | Aggregation method for leaf evaluation scores. Options: `median`, `mean`, `trimmed_mean`. |
+| `--robust_aggregation` | `mean` | Aggregation method for leaf evaluation scores. Options: `mean`, `median`, `trimmed_mean`. |
 | `--uct_variance_weight` | `0.1` | Weight ($\lambda$) for the variance penalty in the UCT formula. Higher values make the search more risk-averse. |
 
 ### Example with Custom Settings
@@ -72,7 +72,7 @@ python run_src/do_generate.py \
     --temperature 0.1 \
     --enable_robustness \
     --robust_sample_size 3 \
-    --robust_aggregation median \
+    --robust_aggregation mean \
     --uct_variance_weight 0.1 \
     --verbose
 ```
